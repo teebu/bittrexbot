@@ -14,27 +14,6 @@ let channel;
 // start the processes
 start();
 
-async function startBot() {
-	const prefix = "!"
-
-	return new Promise(function (resolve, reject) {
-		Bot.on('ready', () => {
-			bot_running = true;
-			console.log('I am ready!');
-			channel = Bot.channels.get("394630266435403786") // twitter
-			return resolve(true);
-		});
-
-
-		Bot.on('message', message => {
-			if (prefix + message.content === 'ping') {
-				message.reply('pong');
-			}
-		});
-
-		Bot.login(config.bot_token);
-	});
-}
 
 
 async function start() {
@@ -86,6 +65,28 @@ async function start() {
 	});
 }
 
+async function startBot() {
+	const prefix = "!"
+
+	return new Promise(function (resolve, reject) {
+		Bot.on('ready', () => {
+			bot_running = true;
+			console.log('I am ready!');
+			channel = Bot.channels.get("394630266435403786") // twitter
+			return resolve(true);
+		});
+
+
+		Bot.on('message', message => {
+			if (prefix + message.content === 'ping') {
+				message.reply('pong');
+			}
+		});
+
+		Bot.login(config.bot_token);
+	});
+}
+
 function getMessagEmbed(event, coins_mentioned) {
 	return {
 		embed: {
@@ -99,7 +100,7 @@ function getMessagEmbed(event, coins_mentioned) {
 			fields: [
 				{
 					name: "Mentioned Coins",
-					value: coins_mentioned.join(' ')
+					value: ':gem: ' + coins_mentioned.join(' :gem: ')
 				},
 				{
 					name: 'Followers',
