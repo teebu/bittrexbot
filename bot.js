@@ -78,7 +78,7 @@ async function startBot() {
 
 
 		Bot.on('message', message => {
-			if (prefix + message.content === 'ping') {
+			if (message.content === prefix+'ping') {
 				message.reply('pong');
 			}
 		});
