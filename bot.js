@@ -24,7 +24,7 @@ async function start() {
 	console.log('tracking: %d coins', coins.length)
 
 	// start twitter stream
-	const twitter_filter = 'mcaffee, bitcoin, bittrex, coin of the day, altcoins, alt coin, shit coin, coin, crypto currency, crypto, shitcoin'
+	const twitter_filter = 'mcaffee, bitcoin, bittrex, coin of the day, altcoins, alt coin, shit coin, coin, crypto currency, crypto, shitcoin, blockchain'
 	let stream = client.stream('statuses/filter', {track: twitter_filter});
 	const regex = new RegExp(`\\b(${coins.join("|")})\\b`, 'g')  // /\b(BTC|POWR)\b/g
 
