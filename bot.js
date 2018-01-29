@@ -24,8 +24,8 @@ async function start() {
 	console.log('tracking: %d coins', coins.length)
 
 	// start twitter stream
-	const twitter_filter = 'mcaffee, bitcoin, bittrex, coin of the day, altcoins, alt coin, shit coin, coin, crypto currency, crypto, shitcoin, blockchain'
-	let stream = client.stream('statuses/filter', {track: twitter_filter});
+	const twitter_filter = 'mcaffee, palm beach, bitcoin, bittrex, coin of the day, altcoins, alt coin, shit coin, coin, crypto currency, crypto, shitcoin, blockchain, moon coin, 10x coin'
+	let stream = client.stream('statuses/filter', {track: twitter_filter, tweet_mode:'extended'});
 	const regex = new RegExp(`\\b(${coins.join("|")})\\b`, 'g')  // /\b(BTC|POWR)\b/g
 
 	//console.log(regex)
@@ -34,10 +34,14 @@ async function start() {
 	stream.on('data', function (event) {
 		//console.log(event && event.text, '\n');
 		let coins_mentioned = [];
-		const str = event && event.text;
+		let str = event && event.text;
 		let m;
 
-		if (event.user.followers_count > 10000) {
+		if (event.extended_tweet) {
+      str = event.extended_tweet.full_text
+		}
+
+		if (event.user && event.user.followers_count && event.user.followers_count > 10000) {
 			while ((m = regex.exec(str)) !== null) {
 				// This is necessary to avoid infinite loops with zero-width matches
 				if (m.index === regex.lastIndex) {
@@ -82,6 +86,13 @@ async function startBot() {
 				message.reply('pong');
 			}
 		});
+
+    Bot.on('message', message => {
+      if (message.content === prefix+'go') {
+        start();
+        message.reply('going');
+      }
+    });
 
 		Bot.login(config.bot_token);
 	});
