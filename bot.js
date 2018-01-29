@@ -8,8 +8,13 @@ const Bot = new Discord.Client();
 const config = require('./config.json');
 const client = new Twitter(config.twitter_keys);
 
+const coinList = require('./coins.json');
+
+const prefix = "!"
 let bot_running = false;
 let channel;
+let min_followers = 10000;
+
 
 // start the processes
 start();
@@ -20,11 +25,12 @@ async function start() {
 
 	await startBot(); //start the discord bot
 	let data = await getCoinsList(); // get bittrex coins list
-	let coins = data.result.map(currency => currency.MarketCurrency).filter(coin => coin != 'BTC') // map and filter bittrex coins list
+	//let coins = data.result.map(currency => currency.MarketCurrency).filter(coin => coin != 'BTC') // map and filter bittrex coins list
+	let coins = Object.keys(coinList)
 	console.log('tracking: %d coins', coins.length)
 
 	// start twitter stream
-	const twitter_filter = 'mcaffee, palm beach, bitcoin, bittrex, coin of the day, altcoins, alt coin, shit coin, coin, crypto currency, crypto, shitcoin, blockchain, moon coin, 10x coin'
+	const twitter_filter = 'binance, kucoin, mcaffee, palm beach, bitcoin, bittrex, coin of the day, altcoins, alt coin, shit coin, coin, crypto currency, crypto, shitcoin, blockchain, moon coin, 10x coin'
 	let stream = client.stream('statuses/filter', {track: twitter_filter, tweet_mode:'extended'});
 	const regex = new RegExp(`\\b(${coins.join("|")})\\b`, 'g')  // /\b(BTC|POWR)\b/g
 
@@ -41,7 +47,7 @@ async function start() {
       str = event.extended_tweet.full_text
 		}
 
-		if (event.user && event.user.followers_count && event.user.followers_count > 10000) {
+		if (event.user && event.user.followers_count && event.user.followers_count > min_followers) {
 			while ((m = regex.exec(str)) !== null) {
 				// This is necessary to avoid infinite loops with zero-width matches
 				if (m.index === regex.lastIndex) {
@@ -70,7 +76,7 @@ async function start() {
 }
 
 async function startBot() {
-	const prefix = "!"
+
 
 	return new Promise(function (resolve, reject) {
 		Bot.on('ready', () => {
@@ -80,23 +86,32 @@ async function startBot() {
 			return resolve(true);
 		});
 
-
-		Bot.on('message', message => {
-			if (message.content === prefix+'ping') {
-				message.reply('pong');
-			}
-		});
-
-    Bot.on('message', message => {
-      if (message.content === prefix+'go') {
-        start();
-        message.reply('going');
-      }
-    });
-
 		Bot.login(config.bot_token);
 	});
 }
+
+Bot.on('message', message => {
+  if (message.content === prefix+'ping') {
+    message.reply('pong');
+  }
+});
+
+
+Bot.on('message', message => {
+	let re = /min (\d+)/
+	let match = re.exec(message)
+  if (match) {
+    min_followers = match[1]
+    message.reply('setting min followers: ' + match[1]);
+  }
+});
+
+Bot.on('message', message => {
+  if (message.content === prefix+'go') {
+    start(); // start listening to tweets
+    message.reply('going');
+  }
+});
 
 function getMessagEmbed(event, coins_mentioned) {
 	return {
