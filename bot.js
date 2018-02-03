@@ -23,9 +23,11 @@ start();
 
 async function start() {
 
-	await startBot(); //start the discord bot
-	let data = await getCoinsList(); // get bittrex coins list
+	startBot(); //start the discord bot
+
+	//let data = await getCoinsList(); // get bittrex coins list
 	//let coins = data.result.map(currency => currency.MarketCurrency).filter(coin => coin != 'BTC') // map and filter bittrex coins list
+
 	let coins = Object.keys(coinList)
 	console.log('tracking: %d coins', coins.length)
 
@@ -75,43 +77,39 @@ async function start() {
 	});
 }
 
-async function startBot() {
+function startBot() {
+  Bot.login(config.bot_token);
 
-
-	return new Promise(function (resolve, reject) {
-		Bot.on('ready', () => {
+  Bot.on('ready', () => {
 			bot_running = true;
 			console.log('I am ready!');
 			channel = Bot.channels.get("394630266435403786") // twitter
-			return resolve(true);
 		});
 
-		Bot.login(config.bot_token);
-	});
+  Bot.on('message', message => {
+    if (message.content === prefix+'ping') {
+      message.reply('pong');
+    }
+  });
+
+  Bot.on('message', message => {
+    let re = /min (\d+)/
+    let match = re.exec(message)
+    if (match) {
+      min_followers = match[1]
+      message.reply('setting min followers: ' + match[1]);
+    }
+  });
+
+  Bot.on('message', message => {
+    if (message.content === prefix+'go') {
+      start(); // start listening to tweets
+      message.reply('going');
+    }
+  });
 }
 
-Bot.on('message', message => {
-  if (message.content === prefix+'ping') {
-    message.reply('pong');
-  }
-});
 
-
-Bot.on('message', message => {
-	let re = /min (\d+)/
-	let match = re.exec(message)
-  if (match) {
-    min_followers = match[1]
-    message.reply('setting min followers: ' + match[1]);
-  }
-});
-
-Bot.on('message', message => {
-  if (message.content === prefix+'go') {
-    start(); // start listening to tweets
-    message.reply('going');
-  }
-});
 
 function getMessagEmbed(event, coins_mentioned) {
 	return {
