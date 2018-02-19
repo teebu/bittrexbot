@@ -73,7 +73,7 @@ async function start() {
 	});
 
 	stream.on('error', function (error) {
-		throw error;
+		console.log(error);
 	});
 }
 
